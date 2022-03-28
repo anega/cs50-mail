@@ -16,6 +16,26 @@ function compose_email() {
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
+  // Get submitted form values
+  const form = document.querySelector('#compose-form');
+  form.addEventListener('submit', function (event) {
+    event.preventDefault()
+    const recipients = document.getElementById('compose-recipients').value
+    const subject = document.getElementById('compose-subject').value
+    const body = document.getElementById('compose-body').value
+
+    fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        recipients: recipients,
+        subject: subject,
+        body: body
+      })
+    })
+        .then(response => response.json())
+        .then(result => console.log(result))
+  })
+
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
@@ -23,7 +43,7 @@ function compose_email() {
 }
 
 function load_mailbox(mailbox) {
-  
+
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
