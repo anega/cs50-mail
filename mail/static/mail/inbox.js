@@ -32,8 +32,22 @@ function compose_email() {
                 body: body
             })
         })
-            .then(response => response.json())
-            .then(result => console.log(result))
+            .then(async response => {
+                if (response.ok) {
+                    load_mailbox('sent')
+                }
+                const errorMessage = await response.json().then(result => result.error)
+                const error = new Error(errorMessage)
+                error.name = ''
+                throw error
+            })
+            .catch(error => {
+                const errorText = document.createTextNode(error)
+                const pTag = document.createElement('p')
+                pTag.classList.add('error-msg')
+                pTag.appendChild(errorText)
+                form.prepend(pTag)
+            })
     })
 
     // Clear out composition fields
