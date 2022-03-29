@@ -56,6 +56,32 @@ function compose_email() {
     document.querySelector('#compose-body').value = '';
 }
 
+function addEmail(emailData) {
+    const email = document.createElement('div')
+    email.classList.add('email-row')
+
+    const emailFrom = document.createElement('span')
+    emailFrom.classList.add('email-from')
+    const emailFromText = document.createTextNode(emailData.sender)
+    emailFrom.appendChild(emailFromText)
+
+    const emailSubject = document.createElement('span')
+    emailSubject.classList.add('email-subject')
+    const emailSubjectText = document.createTextNode(emailData.subject)
+    emailSubject.appendChild(emailSubjectText)
+
+    const emailCreatedAt = document.createElement('span')
+    emailCreatedAt.classList.add('email-date')
+    const emailCreatedAtText = document.createTextNode(emailData.timestamp)
+    emailCreatedAt.appendChild(emailCreatedAtText)
+
+    email.appendChild(emailFrom)
+    email.appendChild(emailSubject)
+    email.appendChild(emailCreatedAt)
+
+    document.querySelector('#emails-view').append(email)
+}
+
 function load_mailbox(mailbox) {
 
     // Show the mailbox and hide other views
@@ -64,4 +90,14 @@ function load_mailbox(mailbox) {
 
     // Show the mailbox name
     document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+    fetch(`/emails/${mailbox}`)
+        .then(response => response.json())
+        .then(emailsList => {
+            if (emailsList.length) {
+                emailsList.forEach(addEmail)
+            } else {
+                document.querySelector('#emails-view').innerHTML += '<p>There are no emails yet.</p>'
+            }
+        })
 }
