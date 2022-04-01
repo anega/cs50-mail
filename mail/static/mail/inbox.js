@@ -14,6 +14,7 @@ function compose_email() {
 
     // Show compose view and hide other views
     document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#email-details').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
 
     // Get submitted form values
@@ -56,9 +57,13 @@ function compose_email() {
     document.querySelector('#compose-body').value = '';
 }
 
-function addEmail(emailData) {
+function emailRowView(emailData) {
     const email = document.createElement('div')
+    email.setAttribute('data-id', emailData.id)
     email.classList.add('email-row')
+    if (!emailData.read) {
+        email.classList.add('email-unread')
+    }
 
     const emailFrom = document.createElement('span')
     emailFrom.classList.add('email-from')
@@ -79,6 +84,10 @@ function addEmail(emailData) {
     email.appendChild(emailSubject)
     email.appendChild(emailCreatedAt)
 
+    email.addEventListener('click', function () {
+        load_email(this.dataset.id)
+    })
+
     document.querySelector('#emails-view').append(email)
 }
 
@@ -86,6 +95,7 @@ function load_mailbox(mailbox) {
 
     // Show the mailbox and hide other views
     document.querySelector('#emails-view').style.display = 'block';
+    document.querySelector('#email-details').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'none';
 
     // Show the mailbox name
@@ -94,10 +104,37 @@ function load_mailbox(mailbox) {
     fetch(`/emails/${mailbox}`)
         .then(response => response.json())
         .then(emailsList => {
+            console.log(emailsList)
             if (emailsList.length) {
-                emailsList.forEach(addEmail)
+                emailsList.forEach(emailRowView)
             } else {
                 document.querySelector('#emails-view').innerHTML += '<p>There are no emails yet.</p>'
             }
         })
+}
+
+function load_email(email_id) {
+    const emailDetailsView = document.querySelector('#email-details')
+    // Show email details and hide other views
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'none';
+    emailDetailsView.style.display = 'block';
+
+    fetch(`/emails/${email_id}`)
+        .then(response => response.json())
+        .then(email => {
+            emailDetailsView.innerHTML =
+                `<h3 class="d-flex justify-content-between">${email.subject} <span>${email.timestamp}</span></h3>
+                <p>From: ${email.sender}</p>
+                <p>To: ${email.recipients}</p>
+                <p>${email.body}</p>`;
+        })
+
+
+    fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            read: true
+        })
+    })
 }
