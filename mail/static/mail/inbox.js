@@ -4,13 +4,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
     document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
     document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
-    document.querySelector('#compose').addEventListener('click', compose_email);
+    document.querySelector('#compose').addEventListener('click', () => compose_email());
 
     // By default, load the inbox
     load_mailbox('inbox');
 });
 
-function compose_email() {
+function compose_email(emailData) {
 
     // Show compose view and hide other views
     document.querySelector('#emails-view').style.display = 'none';
@@ -51,10 +51,21 @@ function compose_email() {
             })
     })
 
+
     // Clear out composition fields
     document.querySelector('#compose-recipients').value = '';
     document.querySelector('#compose-subject').value = '';
     document.querySelector('#compose-body').value = '';
+
+    if (Object.keys(emailData).length !== 0) {
+        document.getElementById('compose-recipients').value = emailData.sender
+        if (emailData.subject.substring(0, 3) === 'Re:') {
+            document.getElementById('compose-subject').value = emailData.subject
+        } else {
+            document.getElementById('compose-subject').value = `Re: ${emailData.subject}`
+        }
+        document.getElementById('compose-body').value = `On ${emailData.timestamp} ${emailData.sender} wrote:\n${emailData.body}`
+    }
 }
 
 function emailRowView(emailData) {
@@ -131,7 +142,8 @@ function load_email(email_id) {
                 emailDetailsView.innerHTML = '<p id="archive-btn" data-archived="true">Archive the email</p>'
             }
             emailDetailsView.innerHTML +=
-                `<h3 class="d-flex justify-content-between">${email.subject} <span>${email.timestamp}</span></h3>
+                `<p id="reply-btn">Reply</p>
+                <h3 class="d-flex justify-content-between">${email.subject} <span>${email.timestamp}</span></h3>
                 <p>From: ${email.sender}</p>
                 <p>To: ${email.recipients}</p>
                 <p>${email.body}</p>`;
@@ -151,6 +163,10 @@ function load_email(email_id) {
                         })
                 })
             }
+
+            document.querySelector('#reply-btn').addEventListener('click', () => {
+                compose_email(email)
+            })
         })
 
     fetch(`/emails/${email_id}`, {
