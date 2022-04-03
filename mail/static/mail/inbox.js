@@ -104,7 +104,6 @@ function load_mailbox(mailbox) {
     fetch(`/emails/${mailbox}`)
         .then(response => response.json())
         .then(emailsList => {
-            console.log(emailsList)
             if (emailsList.length) {
                 emailsList.forEach(emailRowView)
             } else {
@@ -114,22 +113,45 @@ function load_mailbox(mailbox) {
 }
 
 function load_email(email_id) {
-    const emailDetailsView = document.querySelector('#email-details')
     // Show email details and hide other views
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'none';
+    const emailDetailsView = document.querySelector('#email-details')
+    emailDetailsView.innerHTML = '';
     emailDetailsView.style.display = 'block';
+    const currentUserEmail = document.querySelector('#current-user-email').innerHTML
 
     fetch(`/emails/${email_id}`)
         .then(response => response.json())
         .then(email => {
-            emailDetailsView.innerHTML =
+            if (email.archived) {
+                emailDetailsView.innerHTML = '<p id="archive-btn" data-archived="false">Unarchive the email</p>'
+            }
+            if (!email.archived && currentUserEmail !== email.sender) {
+                emailDetailsView.innerHTML = '<p id="archive-btn" data-archived="true">Archive the email</p>'
+            }
+            emailDetailsView.innerHTML +=
                 `<h3 class="d-flex justify-content-between">${email.subject} <span>${email.timestamp}</span></h3>
                 <p>From: ${email.sender}</p>
                 <p>To: ${email.recipients}</p>
                 <p>${email.body}</p>`;
-        })
 
+            const archiveBtn = document.querySelector('#archive-btn')
+            if (archiveBtn) {
+                archiveBtn.addEventListener('click', (event) => {
+                    let isArchive = event.target.dataset.archived === 'true'
+                    fetch(`/emails/${email_id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            archived: isArchive
+                        })
+                    })
+                        .then(() => {
+                            load_mailbox('inbox')
+                        })
+                })
+            }
+        })
 
     fetch(`/emails/${email_id}`, {
         method: 'PUT',
