@@ -57,7 +57,7 @@ function compose_email(emailData) {
     document.querySelector('#compose-subject').value = '';
     document.querySelector('#compose-body').value = '';
 
-    if (Object.keys(emailData).length !== 0) {
+    if (emailData !== undefined && Object.keys(emailData).length !== 0) {
         document.getElementById('compose-recipients').value = emailData.sender
         if (emailData.subject.substring(0, 3) === 'Re:') {
             document.getElementById('compose-subject').value = emailData.subject
