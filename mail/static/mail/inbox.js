@@ -136,14 +136,14 @@ function load_email(email_id) {
         .then(response => response.json())
         .then(email => {
             if (email.archived) {
-                emailDetailsView.innerHTML = '<p id="archive-btn" data-archived="false">Unarchive the email</p>'
+                emailDetailsView.innerHTML = '<p class="btn btn-sm btn-primary" id="archive-btn" data-archived="false">Unarchive the email</p>'
             }
             if (!email.archived && currentUserEmail !== email.sender) {
-                emailDetailsView.innerHTML = '<p id="archive-btn" data-archived="true">Archive the email</p>'
+                emailDetailsView.innerHTML = '<p class="btn btn-sm btn-primary" id="archive-btn" data-archived="true">Archive the email</p>'
             }
             emailDetailsView.innerHTML +=
-                `<p id="reply-btn">Reply</p>
-                <h3 class="d-flex justify-content-between">${email.subject} <span>${email.timestamp}</span></h3>
+                `<p id="reply-btn" class="btn btn-sm btn-primary">Reply</p>
+                <h3 class="d-flex justify-content-between">${email.subject} <span class="email-time">${email.timestamp}</span></h3>
                 <p>From: ${email.sender}</p>
                 <p>To: ${email.recipients}</p>
                 <p>${email.body}</p>`;

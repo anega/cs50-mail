@@ -5,3 +5,41 @@ textarea {
 .error-msg {
     color: red;
 }
+
+.email-row {
+    border: 1px solid rgba(0, 0, 0, .1);
+    margin-bottom: 8px;
+    padding: 4px 12px;
+}
+
+.email-row:hover,
+.email-row.email-unread:hover {
+    background: rgba(0, 0, 0, .1);
+    border-color: rgba(0, 0, 0, .2);
+    cursor: pointer;
+}
+
+.email-row.email-unread {
+    background: rgba(0, 0, 0, .05);
+}
+
+.email-from {
+    display: inline-block;
+    font-weight: 700;
+    width: 100%;
+    max-width: 185px;
+}
+
+.email-date {
+    font-size: 14px;
+    float: right;
+    line-height: 26px;
+}
+
+#archive-btn {
+    margin-right: 6px;
+}
+
+.email-time {
+    font-size: 14px;
+}
