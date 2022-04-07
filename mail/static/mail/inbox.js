@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
     document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
     document.querySelector('#compose').addEventListener('click', () => compose_email());
+    document.querySelector('#compose-form').addEventListener('submit', (event) => sendEmail(event));
 
     // By default, load the inbox
     load_mailbox('inbox');
@@ -16,41 +17,6 @@ function compose_email(emailData) {
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#email-details').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'block';
-
-    // Get submitted form values
-    const form = document.querySelector('#compose-form');
-    form.addEventListener('submit', function (event) {
-        event.preventDefault()
-        const recipients = document.getElementById('compose-recipients').value
-        const subject = document.getElementById('compose-subject').value
-        const body = document.getElementById('compose-body').value
-
-        fetch('/emails', {
-            method: 'POST',
-            body: JSON.stringify({
-                recipients: recipients,
-                subject: subject,
-                body: body
-            })
-        })
-            .then(async response => {
-                if (response.ok) {
-                    load_mailbox('sent')
-                }
-                const errorMessage = await response.json().then(result => result.error)
-                const error = new Error(errorMessage)
-                error.name = ''
-                throw error
-            })
-            .catch(error => {
-                const errorText = document.createTextNode(error)
-                const pTag = document.createElement('p')
-                pTag.classList.add('error-msg')
-                pTag.appendChild(errorText)
-                form.prepend(pTag)
-            })
-    })
-
 
     // Clear out composition fields
     document.querySelector('#compose-recipients').value = '';
@@ -66,6 +32,46 @@ function compose_email(emailData) {
         }
         document.getElementById('compose-body').value = `On ${emailData.timestamp} ${emailData.sender} wrote:\n${emailData.body}`
     }
+}
+
+function sendEmail(event) {
+    event.preventDefault()
+    const recipients = document.getElementById('compose-recipients').value
+    const subject = document.getElementById('compose-subject').value
+    const body = document.getElementById('compose-body').value
+    const form = document.querySelector('#compose-form');
+
+    fetch('/emails', {
+        method: 'POST',
+        body: JSON.stringify({
+            recipients: recipients,
+            subject: subject,
+            body: body
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            }
+            response.json().then(result => {
+                result.error
+                const error = new Error(result.error)
+                error.name = ''
+                throw error
+            })
+
+        })
+        .then(() => {
+            form.reset()
+            load_mailbox('sent')
+        })
+        .catch(error => {
+            const errorText = document.createTextNode(error)
+            const pTag = document.createElement('p')
+            pTag.classList.add('error-msg')
+            pTag.appendChild(errorText)
+            form.prepend(pTag)
+        })
 }
 
 function emailRowView(emailData) {
